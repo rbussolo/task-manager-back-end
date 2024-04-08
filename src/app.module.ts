@@ -3,6 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { TaskModule } from './task/task.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Task } from './task/entities/task.entity';
+import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
+import { User } from './user/entities/user.entity';
 
 @Module({
   imports: [
@@ -16,11 +19,13 @@ import { Task } from './task/entities/task.entity';
       database: process.env.POSTGRES_DATABASE,
       synchronize: true,
       logging: true,
-      entities: [Task],
+      entities: [Task, User],
       subscribers: [],
       migrations: ['dist/database/migrations/*.js'],
     }),
     TaskModule,
+    UserModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

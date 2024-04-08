@@ -4,6 +4,7 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { AppError } from './errors/AppError';
@@ -22,6 +23,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ctx.getResponse(),
         exception,
         exception.statusCode,
+      );
+    }
+
+    if (exception instanceof UnauthorizedException) {
+      return httpAdapter.reply(
+        ctx.getResponse(),
+        exception,
+        HttpStatus.UNAUTHORIZED,
       );
     }
 

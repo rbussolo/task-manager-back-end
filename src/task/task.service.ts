@@ -8,13 +8,14 @@ import { AppError } from 'src/errors/AppError';
 import { SuccessfullyUpdated } from 'src/success/SuccessfullyUpdated';
 import { SuccessfullyDeleted } from 'src/success/SuccessfullyDeleted';
 import { SearchTaskDto } from './dto/search-task.dto';
+import { IUserPayload } from 'src/auth/auth.service';
 
 @Injectable()
 export class TaskService {
   @InjectDataSource()
   private dataSource: DataSource;
 
-  async create(createTaskDto: CreateTaskDto) {
+  async create(user: IUserPayload, createTaskDto: CreateTaskDto) {
     if (!createTaskDto.title) {
       throw new AppError('Necessário informar o Título da Tarefa!');
     }
@@ -24,6 +25,7 @@ export class TaskService {
     const task = repo.create({
       ...createTaskDto,
       completed: false,
+      user_id: user.sub,
     });
 
     await repo.save(task);
@@ -31,7 +33,7 @@ export class TaskService {
     return task;
   }
 
-  async findAll(searchTaskDto: SearchTaskDto) {
+  async findAll(user: IUserPayload, searchTaskDto: SearchTaskDto) {
     const repo = this.dataSource.getRepository(Task);
 
     const where: FindOptionsWhere<Task>[] = [];
@@ -56,6 +58,8 @@ export class TaskService {
       where.push({ dueDate: new Date(searchTaskDto.dueDate) });
     }
 
+    where.push({ user_id: user.sub });
+
     const order: FindOptionsOrder<Task> =
       searchTaskDto.order === 'priority'
         ? { priority: 'DESC' }
@@ -68,10 +72,10 @@ export class TaskService {
     return await repo.find({ order: order, where: where });
   }
 
-  async findOne(id: number) {
+  async findOne(user: IUserPayload, id: number) {
     const repo = this.dataSource.getRepository(Task);
 
-    const result = await repo.findOne({ where: { id } });
+    const result = await repo.findOne({ where: { id, user_id: user.sub } });
 
     if (!result) {
       throw new AppError('Registro não encontrado!', 404);
@@ -80,7 +84,13 @@ export class TaskService {
     return result;
   }
 
-  async update(id: number, updateTaskDto: UpdateTaskDto) {
+  async update(user: IUserPayload, id: number, updateTaskDto: UpdateTaskDto) {
+    const task = this.findOne(user, id);
+
+    if (task instanceof AppError) {
+      return task;
+    }
+
     const repo = this.dataSource.getRepository(Task);
 
     const result = await repo.update(id, {
@@ -94,9 +104,9 @@ export class TaskService {
     return new SuccessfullyUpdated();
   }
 
-  async completeTask(id: number) {
+  async completeTask(user: IUserPayload, id: number) {
     const repo = this.dataSource.getRepository(Task);
-    const task = await repo.findOne({ where: { id } });
+    const task = await repo.findOne({ where: { id, user_id: user.sub } });
 
     if (!task) {
       throw new AppError('Registro não encontrado!', 404);
@@ -109,7 +119,13 @@ export class TaskService {
     return new SuccessfullyUpdated();
   }
 
-  async remove(id: number) {
+  async remove(user: IUserPayload, id: number) {
+    const task = this.findOne(user, id);
+
+    if (task instanceof AppError) {
+      return task;
+    }
+
     const repo = this.dataSource.getRepository(Task);
 
     const result = await repo.delete(id);
