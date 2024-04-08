@@ -33,6 +33,9 @@ export class Task {
   @Column({ nullable: true })
   category: string;
 
+  @Column({ nullable: true })
+  dueDate: Date;
+
   @Column({
     default: false,
   })

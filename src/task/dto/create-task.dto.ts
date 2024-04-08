@@ -3,4 +3,5 @@ export class CreateTaskDto {
   description?: string;
   priority?: string;
   category?: string;
+  dueDate?: Date;
 }
