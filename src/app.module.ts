@@ -18,7 +18,6 @@ import { User } from './user/entities/user.entity';
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DATABASE,
       synchronize: true,
-      logging: true,
       entities: [Task, User],
       subscribers: [],
       migrations: ['dist/database/migrations/*.js'],

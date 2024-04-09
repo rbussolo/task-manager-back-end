@@ -4,8 +4,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { AppError } from 'src/errors/AppError';
 import { User } from './entities/user.entity';
-
-import * as bcrypt from 'bcrypt';
+import * as bcryptjs from 'bcryptjs';
 
 @Injectable()
 export class UserService {
@@ -26,7 +25,6 @@ export class UserService {
       login: createUserDto.login,
       password: pass,
     });
-    console.log('Antes');
 
     await repo.save(user);
 
@@ -47,7 +45,7 @@ export class UserService {
 
   async encryptPassword(pass: string) {
     const saltRounds = 10;
-    const password = await bcrypt.hash(pass, saltRounds);
+    const password = await bcryptjs.hash(pass, saltRounds);
 
     return password;
   }
@@ -56,6 +54,6 @@ export class UserService {
     if (!passwordJustText) return false;
     if (!passwordDatabase) return false;
 
-    return await bcrypt.compare(passwordJustText, passwordDatabase);
+    return await bcryptjs.compare(passwordJustText, passwordDatabase);
   }
 }

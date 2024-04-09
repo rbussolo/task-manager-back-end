@@ -15,6 +15,8 @@ Projeto de Gerenciamento de Tarefas por Usuário
 
 Primeiramente é necessário configurar o arquivo .env caso for rodar ele de forma local e o arquivo .env.production caso for utilizar o DOCKER.
 
+É necessário que o Banco de Dados já esteja criado, a estrutara será criada automaticamente, mas o banco não.
+
 Feito esta configuração, se for utilizar o docker, basta startar a imagem presente na aplicação, caso não, é necessário rodar os seguintes comandos.
 
 1. Primeiro instalar as dependencias
