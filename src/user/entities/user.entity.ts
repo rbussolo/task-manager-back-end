@@ -11,10 +11,16 @@ export class User {
   id: number;
 
   @Column({ unique: true })
-  login: string;
+  email: string;
 
   @Column()
   password: string;
+
+  @Column()
+  name: string;
+
+  @Column({ nullable: true })
+  urlImage: string;
 
   @CreateDateColumn()
   created_at: string;

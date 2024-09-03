@@ -34,6 +34,12 @@ export class TaskController {
   }
 
   @UseGuards(AuthGuard)
+  @Get('/tasks/amount')
+  tasksAmount(@User() user: IUserPayload) {
+    return this.taskService.tasksAmount(user);
+  }
+
+  @UseGuards(AuthGuard)
   @Get('/task/:id')
   findOne(@Param('id') id: string, @User() user: IUserPayload) {
     return this.taskService.findOne(user, +id);

@@ -11,24 +11,49 @@ export class UserService {
   @InjectDataSource()
   private dataSource: DataSource;
 
-  async create(createUserDto: CreateUserDto) {
-    if (!createUserDto.login) {
-      throw new AppError('Necessário informar um Login');
-    } else if (!createUserDto.password) {
-      throw new AppError('Necessário informar a Senha');
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const required: string[] = [];
+
+    if (!createUserDto.name) {
+      required.push('Nome');
+    }
+
+    if (!createUserDto.email) {
+      required.push('E-mail');
+    }
+
+    if (!createUserDto.password) {
+      required.push('Senha');
+    }
+
+    if (required.length) {
+      throw new AppError(
+        'Campos obrigatórios',
+        400,
+        'REQUIRED_FIELDS',
+        required,
+      );
+    }
+
+    // Verifica se ja existe este email
+    const userExist = await this.findByEmail(createUserDto.email);
+
+    if (userExist) {
+      throw new AppError('E-mail já cadastrado!');
     }
 
     const repo = this.dataSource.getRepository(User);
     const pass = await this.encryptPassword(createUserDto.password);
 
     const user = repo.create({
-      login: createUserDto.login,
+      name: createUserDto.name,
+      email: createUserDto.email,
       password: pass,
     });
 
-    await repo.save(user);
+    const result = await repo.save(user);
 
-    return user;
+    return result;
   }
 
   async findAll() {
@@ -37,10 +62,10 @@ export class UserService {
     return await repo.find({ order: { id: 'DESC' } });
   }
 
-  async findByLogin(login: string) {
+  async findByEmail(email: string) {
     const repo = this.dataSource.getRepository(User);
 
-    return await repo.findOne({ where: { login } });
+    return await repo.findOne({ where: { email } });
   }
 
   async encryptPassword(pass: string) {

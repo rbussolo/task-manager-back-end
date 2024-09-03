@@ -3,7 +3,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, FindOptionsOrder, FindOptionsWhere, ILike } from 'typeorm';
-import { Task } from './entities/task.entity';
+import { Task, TaskPriority } from './entities/task.entity';
 import { AppError } from 'src/errors/AppError';
 import { SuccessfullyUpdated } from 'src/success/SuccessfullyUpdated';
 import { SuccessfullyDeleted } from 'src/success/SuccessfullyDeleted';
@@ -31,6 +31,21 @@ export class TaskService {
     await repo.save(task);
 
     return task;
+  }
+
+  async tasksAmount(user: IUserPayload) {
+    const repo = this.dataSource.getRepository(Task);
+
+    const tasks = await repo.find({ where: { user_id: user.sub } });
+
+    return {
+      amount: tasks.length,
+      amountImportant: tasks.filter(
+        (task) => task.priority === TaskPriority.High,
+      ).length,
+      amounPlanned: 0,
+      tags: [],
+    };
   }
 
   async findAll(user: IUserPayload, searchTaskDto: SearchTaskDto) {

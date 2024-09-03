@@ -5,7 +5,11 @@ import { AppError } from 'src/errors/AppError';
 
 export interface IUserPayload {
   sub: number;
-  login: string;
+  email: string;
+}
+
+export interface SignInResponse {
+  access_token: string;
 }
 
 @Injectable()
@@ -15,34 +19,29 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signIn(login: string, pass: string): Promise<any> {
-    if (!login) {
-      throw new AppError('Necessário informar o LOGIN!');
-    } else if (!pass) {
-      throw new AppError('Necessário informar a SENHA!');
+  async signIn(email: string, pass: string): Promise<SignInResponse> {
+    if (!email || !pass) {
+      throw new AppError('É necessário informar o e-mail e senha!');
     }
 
-    let user = await this.userService.findByLogin(login);
+    const user = await this.userService.findByEmail(email);
 
     if (!user) {
-      await this.userService.create({ login, password: pass });
-
-      user = await this.userService.findByLogin(login);
+      throw new AppError('Credenciais inválidas!');
     }
 
     const passwordIsCorrect = await this.userService.comparePassword(
       pass,
-      user?.password,
+      user.password,
     );
 
     if (!passwordIsCorrect) {
-      throw new AppError('Login / Senha incorretos!');
+      throw new AppError('Credenciais inválidas!');
     }
 
-    const payload: IUserPayload = { sub: user.id, login: user.login };
+    const payload: IUserPayload = { sub: user.id, email: user.email };
+    const access_token = await this.jwtService.signAsync(payload);
 
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
+    return { access_token };
   }
 }
