@@ -5,6 +5,7 @@ import { DataSource } from 'typeorm';
 import { AppError } from 'src/errors/AppError';
 import { User } from './entities/user.entity';
 import * as bcryptjs from 'bcryptjs';
+import { IUserPayload } from 'src/auth/auth.service';
 
 @Injectable()
 export class UserService {
@@ -56,10 +57,17 @@ export class UserService {
     return result;
   }
 
-  async findAll() {
+  async findOne(user: IUserPayload) {
     const repo = this.dataSource.getRepository(User);
 
-    return await repo.find({ order: { id: 'DESC' } });
+    const result = await repo.findOne({ where: { id: user.sub } });
+
+    if (!result) {
+      throw new AppError('Registro não encontrado!', 404);
+    }
+
+    delete result['password'];
+    return result;
   }
 
   async findByEmail(email: string) {

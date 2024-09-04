@@ -6,6 +6,8 @@ import { Task } from './task/entities/task.entity';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './user/entities/user.entity';
+import { GroupModule } from './group/group.module';
+import { Group } from './group/entities/group.entity';
 
 @Module({
   imports: [
@@ -18,11 +20,12 @@ import { User } from './user/entities/user.entity';
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DATABASE,
       synchronize: true,
-      entities: [Task, User],
+      entities: [Task, Group, User],
       subscribers: [],
       migrations: ['dist/database/migrations/*.js'],
     }),
     TaskModule,
+    GroupModule,
     UserModule,
     AuthModule,
   ],
