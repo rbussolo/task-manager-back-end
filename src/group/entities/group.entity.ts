@@ -19,6 +19,12 @@ export class Group {
   @Column()
   icon: string;
 
+  @Column()
+  slug: string;
+
+  @Column()
+  amount: number;
+
   @Column({ nullable: true })
   user_id: number;
 

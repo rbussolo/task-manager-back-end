@@ -9,6 +9,7 @@ export interface IUserPayload {
 }
 
 export interface SignInResponse {
+  refresh_token: string;
   access_token: string;
 }
 
@@ -40,8 +41,43 @@ export class AuthService {
     }
 
     const payload: IUserPayload = { sub: user.id, email: user.email };
-    const access_token = await this.jwtService.signAsync(payload);
+    const access_token = await this.jwtService.signAsync(payload, {
+      secret: process.env.ACCESS_TOKEN_KEY,
+      expiresIn: '20m',
+    });
+    const refresh_token = await this.jwtService.signAsync(payload, {
+      secret: process.env.REFRESH_TOKEN_KEY,
+      expiresIn: '60m',
+    });
 
-    return { access_token };
+    return { refresh_token, access_token };
+  }
+
+  async refresh(token: string | undefined): Promise<SignInResponse> {
+    if (!token) {
+      throw new AppError('Token not found!');
+    }
+
+    try {
+      const payload: IUserPayload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.REFRESH_TOKEN_KEY,
+      });
+
+      delete payload['iat'];
+      delete payload['exp'];
+
+      const access_token = await this.jwtService.signAsync(payload, {
+        secret: process.env.ACCESS_TOKEN_KEY,
+        expiresIn: '20m',
+      });
+      const refresh_token = await this.jwtService.signAsync(payload, {
+        secret: process.env.REFRESH_TOKEN_KEY,
+        expiresIn: '60m',
+      });
+
+      return { refresh_token, access_token };
+    } catch (e) {
+      throw new AppError('Error creating tokens!');
+    }
   }
 }
