@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, UseGuards, Patch, UploadedFile, ParseFilePipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Patch,
+  UploadedFile,
+  ParseFilePipe,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -6,6 +16,7 @@ import { User } from './user.decorator';
 import { IUserPayload } from 'src/auth/auth.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserFileSizeValidator, UserFileTypeValidator } from './user.file';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('/api/users')
 export class UserController {
@@ -24,14 +35,19 @@ export class UserController {
 
   @UseGuards(AuthGuard)
   @Patch('/photo')
-  photo(@UploadedFile(
-    new ParseFilePipe({
-      validators: [
-        new UserFileSizeValidator({}),
-        new UserFileTypeValidator({}),
-      ],
-    }),
-  ) file: Express.Multer.File, @User() user: IUserPayload) {
+  @UseInterceptors(FileInterceptor('file'))
+  photo(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new UserFileSizeValidator({ validate: true }),
+          new UserFileTypeValidator({ validate: true }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+    @User() user: IUserPayload,
+  ) {
     return this.userService.updatePhoto(user, file);
   }
 

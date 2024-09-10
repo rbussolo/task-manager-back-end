@@ -7,12 +7,12 @@ import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]), 
+    TypeOrmModule.forFeature([User]),
     MulterModule.registerAsync({
       useFactory: () => ({
-        dest: './upload',
+        dest: './uploads',
       }),
-    })
+    }),
   ],
   controllers: [UserController],
   providers: [UserService],

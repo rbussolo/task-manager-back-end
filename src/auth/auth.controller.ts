@@ -48,10 +48,6 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
   async refresh(@Request() req, @Res() response: Response) {
-    console.log('chamou o refresh');
-    console.log(req.cookies);
-    console.log('Cookie refresh: ' + req.cookies['auth-refresh']);
-
     const refresh_token: string | undefined = req.cookies['auth-refresh'];
 
     const authentication = await this.authService.refresh(refresh_token);

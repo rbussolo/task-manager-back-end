@@ -59,7 +59,10 @@ export class UserService {
     return result;
   }
 
-  async update(user: IUserPayload, updateUserDto: UpdateUserDto): Promise<SuccessfullyUpdated> {
+  async update(
+    user: IUserPayload,
+    updateUserDto: UpdateUserDto,
+  ): Promise<SuccessfullyUpdated> {
     const required: string[] = [];
 
     if (!updateUserDto.name) {
@@ -87,10 +90,10 @@ export class UserService {
     }
 
     const repo = this.dataSource.getRepository(User);
-    const id = user.sub
-    
+    const id = user.sub;
+
     const result = await repo.update(id, {
-      ...updateUserDto
+      ...updateUserDto,
     });
 
     if (!result.affected) {
@@ -100,12 +103,17 @@ export class UserService {
     return new SuccessfullyUpdated();
   }
 
-  async updatePhoto(user: IUserPayload, file: Express.Multer.File): Promise<SuccessfullyUpdated> {
+  async updatePhoto(
+    user: IUserPayload,
+    file: Express.Multer.File,
+  ): Promise<SuccessfullyUpdated> {
     const repo = this.dataSource.getRepository(User);
-    const id = user.sub
-    
+    const id = user.sub;
+
+    const urlImage = process.env.UPLOADED_URL + file.filename;
+
     const result = await repo.update(id, {
-      urlImage: file.path
+      urlImage: urlImage,
     });
 
     if (!result.affected) {

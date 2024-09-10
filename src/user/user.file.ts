@@ -1,7 +1,8 @@
-import { PipeTransform, Injectable, ArgumentMetadata, FileValidator } from '@nestjs/common';
+import { FileValidator } from '@nestjs/common';
 import { IFile } from '@nestjs/common/pipes/file/interfaces';
 
 export type UserFileValidatorOptions = {
+  validate: boolean;
 };
 
 export class UserFileTypeValidator extends FileValidator<
@@ -13,11 +14,7 @@ export class UserFileTypeValidator extends FileValidator<
   }
 
   isValid(file?: IFile): boolean {
-    return (
-      !!file && 
-      'mimetype' in file &&
-      !!file.mimetype.match('image/png')
-    );
+    return !!file && 'mimetype' in file && !!file.mimetype.match('image/png');
   }
 }
 
@@ -38,8 +35,6 @@ export class UserFileSizeValidator extends FileValidator<
   }
 
   isValid(file?: IFile): boolean {
-    return (
-      !!file && file.size <= this.maxSize()
-    );
+    return !!file && file.size <= this.maxSize();
   }
 }
