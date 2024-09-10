@@ -6,6 +6,8 @@ import { AppError } from 'src/errors/AppError';
 import { User } from './entities/user.entity';
 import * as bcryptjs from 'bcryptjs';
 import { IUserPayload } from 'src/auth/auth.service';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { SuccessfullyUpdated } from 'src/success/SuccessfullyUpdated';
 
 @Injectable()
 export class UserService {
@@ -55,6 +57,62 @@ export class UserService {
     const result = await repo.save(user);
 
     return result;
+  }
+
+  async update(user: IUserPayload, updateUserDto: UpdateUserDto): Promise<SuccessfullyUpdated> {
+    const required: string[] = [];
+
+    if (!updateUserDto.name) {
+      required.push('Nome');
+    }
+
+    if (!updateUserDto.email) {
+      required.push('E-mail');
+    }
+
+    if (required.length) {
+      throw new AppError(
+        'Campos obrigatórios',
+        400,
+        'REQUIRED_FIELDS',
+        required,
+      );
+    }
+
+    // Verifica se ja existe este email
+    const userExist = await this.findByEmail(updateUserDto.email);
+
+    if (userExist && userExist.id !== user.sub) {
+      throw new AppError('E-mail já cadastrado!');
+    }
+
+    const repo = this.dataSource.getRepository(User);
+    const id = user.sub
+    
+    const result = await repo.update(id, {
+      ...updateUserDto
+    });
+
+    if (!result.affected) {
+      throw new AppError('Registro não encontrado!');
+    }
+
+    return new SuccessfullyUpdated();
+  }
+
+  async updatePhoto(user: IUserPayload, file: Express.Multer.File): Promise<SuccessfullyUpdated> {
+    const repo = this.dataSource.getRepository(User);
+    const id = user.sub
+    
+    const result = await repo.update(id, {
+      urlImage: file.path
+    });
+
+    if (!result.affected) {
+      throw new AppError('Registro não encontrado!');
+    }
+
+    return new SuccessfullyUpdated();
   }
 
   async findOne(user: IUserPayload) {
