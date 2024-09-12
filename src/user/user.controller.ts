@@ -17,6 +17,7 @@ import { IUserPayload } from 'src/auth/auth.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserFileSizeValidator, UserFileTypeValidator } from './user.file';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 
 @Controller('/api/users')
 export class UserController {
@@ -31,6 +32,15 @@ export class UserController {
   @Patch()
   update(@Body() updateUserDto: UpdateUserDto, @User() user: IUserPayload) {
     return this.userService.update(user, updateUserDto);
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('/password')
+  updatePassword(
+    @Body() updateUserPasswordDto: UpdateUserPasswordDto,
+    @User() user: IUserPayload,
+  ) {
+    return this.userService.updatePassword(user, updateUserPasswordDto);
   }
 
   @UseGuards(AuthGuard)

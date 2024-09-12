@@ -8,6 +8,7 @@ import * as bcryptjs from 'bcryptjs';
 import { IUserPayload } from 'src/auth/auth.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SuccessfullyUpdated } from 'src/success/SuccessfullyUpdated';
+import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 
 @Injectable()
 export class UserService {
@@ -94,6 +95,29 @@ export class UserService {
 
     const result = await repo.update(id, {
       ...updateUserDto,
+    });
+
+    if (!result.affected) {
+      throw new AppError('Registro não encontrado!');
+    }
+
+    return new SuccessfullyUpdated();
+  }
+
+  async updatePassword(
+    user: IUserPayload,
+    updateUserPasswordDto: UpdateUserPasswordDto,
+  ): Promise<SuccessfullyUpdated> {
+    if (!updateUserPasswordDto.password) {
+      throw new AppError('É necessário informar a nova senha!');
+    }
+
+    const repo = this.dataSource.getRepository(User);
+    const pass = await this.encryptPassword(updateUserPasswordDto.password);
+    const id = user.sub;
+
+    const result = await repo.update(id, {
+      password: pass,
     });
 
     if (!result.affected) {
