@@ -6,7 +6,6 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { IUserPayload } from 'src/auth/auth.service';
 import { Group } from './entities/group.entity';
-import { SuccessfullyUpdated } from 'src/success/SuccessfullyUpdated';
 import { SuccessfullyDeleted } from 'src/success/SuccessfullyDeleted';
 
 @Injectable()
@@ -36,6 +35,8 @@ export class GroupService {
 
     await repo.save(group);
 
+    console.log(group);
+
     return group;
   }
 
@@ -64,7 +65,7 @@ export class GroupService {
   }
 
   async update(user: IUserPayload, id: number, updateGroupDto: UpdateGroupDto) {
-    const group = this.findOne(user, id);
+    const group = await this.findOne(user, id);
 
     if (group instanceof AppError) {
       return group;
@@ -80,7 +81,7 @@ export class GroupService {
       throw new AppError('Registro não encontrado!');
     }
 
-    return new SuccessfullyUpdated();
+    return { ...group, ...updateGroupDto };
   }
 
   async remove(user: IUserPayload, id: number) {
