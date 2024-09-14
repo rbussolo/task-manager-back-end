@@ -35,8 +35,6 @@ export class GroupService {
 
     await repo.save(group);
 
-    console.log(group);
-
     return group;
   }
 
