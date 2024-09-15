@@ -82,7 +82,7 @@ export class TaskService {
           ? { due_date: 'DESC' }
           : { id: 'DESC' };
 
-    return await repo.find({ order: order, where: where });
+    return await repo.find({ order: order, where: where, relations: { group: true } });
   }
 
   async findOne(user: IUserPayload, id: number) {
