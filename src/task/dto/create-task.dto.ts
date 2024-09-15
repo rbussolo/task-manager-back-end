@@ -2,6 +2,6 @@ export class CreateTaskDto {
   title: string;
   description?: string;
   priority?: string;
-  category?: string;
-  dueDate?: Date;
+  group_id?: number | undefined;
+  due_date?: Date;
 }

@@ -17,7 +17,7 @@ export class TaskService {
 
   async create(user: IUserPayload, createTaskDto: CreateTaskDto) {
     if (!createTaskDto.title) {
-      throw new AppError('Necessário informar o Título da Tarefa!');
+      throw new AppError('É necessário informar o Título da Tarefa!');
     }
 
     const repo = this.dataSource.getRepository(Task);
