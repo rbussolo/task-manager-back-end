@@ -57,20 +57,20 @@ export class TaskService {
       where.push({ title: ILike(`%${searchTaskDto.title}%`) });
     }
 
-    if (searchTaskDto.description) {
-      where.push({ description: ILike(`%${searchTaskDto.description}%`) });
-    }
-
     if (searchTaskDto.priority) {
       where.push({ priority: searchTaskDto.priority });
     }
 
-    if (searchTaskDto.category) {
-      where.push({ priority: searchTaskDto.category });
+    if (searchTaskDto.due_date) {
+      where.push({ due_date: new Date(searchTaskDto.due_date) });
     }
 
-    if (searchTaskDto.dueDate) {
-      where.push({ dueDate: new Date(searchTaskDto.dueDate) });
+    if (searchTaskDto.completed) {
+      where.push({ completed: searchTaskDto.completed });
+    }
+
+    if (searchTaskDto.group_id) {
+      where.push({ group_id: searchTaskDto.group_id });
     }
 
     where.push({ user_id: user.sub });
@@ -78,11 +78,9 @@ export class TaskService {
     const order: FindOptionsOrder<Task> =
       searchTaskDto.order === 'priority'
         ? { priority: 'DESC' }
-        : searchTaskDto.order === 'category'
-          ? { category: 'DESC' }
-          : searchTaskDto.order === 'dueDate'
-            ? { dueDate: 'DESC' }
-            : { id: 'DESC' };
+        : searchTaskDto.order === 'dueDate'
+          ? { due_date: 'DESC' }
+          : { id: 'DESC' };
 
     return await repo.find({ order: order, where: where });
   }

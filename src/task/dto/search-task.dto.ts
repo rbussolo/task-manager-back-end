@@ -1,8 +1,9 @@
 export class SearchTaskDto {
+  page?: number;
   title?: string;
-  description?: string;
   priority?: string;
-  category?: string;
-  dueDate?: Date;
-  order?: '' | 'priority' | 'category' | 'dueDate';
+  group_id?: number;
+  due_date?: Date;
+  completed?: boolean;
+  order?: '' | 'priority' | 'dueDate';
 }

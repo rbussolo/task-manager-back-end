@@ -1,3 +1,4 @@
+import { Group } from 'src/group/entities/group.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -34,18 +35,27 @@ export class Task {
   priority: string;
 
   @Column({ nullable: true })
-  category: string;
-
-  @Column({ nullable: true })
-  dueDate: Date;
+  due_date: Date;
 
   @Column({
     default: false,
   })
   completed: boolean;
 
-  @Column({ nullable: true })
+  @Column({
+    default: false,
+  })
+  important: boolean;
+
+  @Column()
   user_id: number;
+
+  @Column({ nullable: true })
+  group_id: number;
+
+  @ManyToOne(() => Group)
+  @JoinColumn({ name: 'group_id' })
+  group: Group;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
