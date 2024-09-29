@@ -2,13 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource, FindOptionsOrder, FindOptionsWhere, ILike } from 'typeorm';
+import { DataSource, SelectQueryBuilder } from 'typeorm';
 import { Task, TaskPriority } from './entities/task.entity';
 import { AppError } from 'src/errors/AppError';
 import { SuccessfullyUpdated } from 'src/success/SuccessfullyUpdated';
 import { SuccessfullyDeleted } from 'src/success/SuccessfullyDeleted';
 import { SearchTaskDto } from './dto/search-task.dto';
 import { IUserPayload } from 'src/auth/auth.service';
+
+export interface GroupAmount {
+  group_id: number;
+  amount: number;
+}
 
 @Injectable()
 export class TaskService {
@@ -36,53 +41,97 @@ export class TaskService {
   async tasksAmount(user: IUserPayload) {
     const repo = this.dataSource.getRepository(Task);
 
-    const tasks = await repo.find({ where: { user_id: user.sub } });
+    const tasks = await repo.find({
+      where: { user_id: user.sub, completed: false },
+    });
+
+    const groups: GroupAmount[] = [];
+
+    for (let i = 0; i < tasks.length; i++) {
+      if (tasks[i].group_id > 0) {
+        const index = groups.findIndex(
+          (group) => tasks[i].group_id === group.group_id,
+        );
+
+        if (index < 0) {
+          groups.push({ group_id: tasks[i].group_id, amount: 1 });
+        } else {
+          groups[index].amount += 1;
+        }
+      }
+    }
 
     return {
       amount: tasks.length,
       amountImportant: tasks.filter(
         (task) => task.priority === TaskPriority.High,
       ).length,
-      amounPlanned: 0,
-      tags: [],
+      amountPlanned: 0,
+      groups: groups,
     };
   }
 
   async findAll(user: IUserPayload, searchTaskDto: SearchTaskDto) {
     const repo = this.dataSource.getRepository(Task);
 
-    const where: FindOptionsWhere<Task>[] = [];
+    const queryBuilder: SelectQueryBuilder<Task> = repo
+      .createQueryBuilder('t')
+      .leftJoinAndSelect('t.group', 'g')
+      .where('t.user_id = :user_id', { user_id: user.sub });
 
     if (searchTaskDto.title) {
-      where.push({ title: ILike(`%${searchTaskDto.title}%`) });
+      queryBuilder.andWhere('t.title like :title', {
+        title: '%' + searchTaskDto.title + '%',
+      });
     }
 
     if (searchTaskDto.priority) {
-      where.push({ priority: searchTaskDto.priority });
+      queryBuilder.andWhere('t.priority = :priority', {
+        priority: searchTaskDto.priority,
+      });
     }
 
     if (searchTaskDto.due_date) {
-      where.push({ due_date: new Date(searchTaskDto.due_date) });
+      queryBuilder.andWhere('t.due_date = :due_date', {
+        due_date: new Date(searchTaskDto.due_date),
+      });
     }
 
     if (searchTaskDto.completed) {
-      where.push({ completed: searchTaskDto.completed });
+      queryBuilder.andWhere('t.completed = :completed', {
+        completed: searchTaskDto.completed,
+      });
+    }
+
+    if (searchTaskDto.important) {
+      queryBuilder.andWhere('t.priority = :important', {
+        important: 'Alta',
+      });
     }
 
     if (searchTaskDto.group_id) {
-      where.push({ group_id: searchTaskDto.group_id });
+      queryBuilder.andWhere('t.group_id = :group_id', {
+        group_id: searchTaskDto.group_id,
+      });
     }
 
-    where.push({ user_id: user.sub });
+    if (searchTaskDto.group_slug) {
+      queryBuilder.andWhere('g.slug = :group_slug', {
+        group_slug: searchTaskDto.group_slug,
+      });
+    }
 
-    const order: FindOptionsOrder<Task> =
-      searchTaskDto.order === 'priority'
-        ? { priority: 'DESC' }
-        : searchTaskDto.order === 'dueDate'
-          ? { due_date: 'DESC' }
-          : { id: 'DESC' };
+    if (searchTaskDto.order === 'priority') {
+      queryBuilder.orderBy('t.priority DESC');
+    } else if (searchTaskDto.order === 'dueDate') {
+      queryBuilder.orderBy('t.due_date DESC');
+    } else {
+      queryBuilder.orderBy('t.id', 'DESC');
+    }
 
-    return await repo.find({ order: order, where: where, relations: { group: true } });
+    const result = await queryBuilder.getMany();
+
+    return result;
   }
 
   async findOne(user: IUserPayload, id: number) {

@@ -32,13 +32,13 @@ export class AuthController {
 
     response.cookie('auth', authentication.access_token, {
       httpOnly: true,
-      maxAge: 7 * 86400,
+      maxAge: 24 * 60 * 60 * 1000,
       path: '/',
     });
 
     response.cookie('auth-refresh', authentication.refresh_token, {
       httpOnly: true,
-      maxAge: 7 * 86400,
+      maxAge: 24 * 60 * 60 * 1000,
       path: '/',
     });
 
@@ -54,13 +54,13 @@ export class AuthController {
 
     response.cookie('auth', authentication.access_token, {
       httpOnly: true,
-      maxAge: 7 * 86400,
+      maxAge: 24 * 60 * 60 * 1000,
       path: '/',
     });
 
     response.cookie('auth-refresh', authentication.refresh_token, {
       httpOnly: true,
-      maxAge: 7 * 86400,
+      maxAge: 24 * 60 * 60 * 1000,
       path: '/',
     });
 

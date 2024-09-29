@@ -26,6 +26,9 @@ export class Group {
   amount: number;
 
   @Column({ nullable: true })
+  color: string;
+
+  @Column({ nullable: true })
   user_id: number;
 
   @ManyToOne(() => User)

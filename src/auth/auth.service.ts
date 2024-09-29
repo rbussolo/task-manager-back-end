@@ -43,7 +43,7 @@ export class AuthService {
     const payload: IUserPayload = { sub: user.id, email: user.email };
     const access_token = await this.jwtService.signAsync(payload, {
       secret: process.env.ACCESS_TOKEN_KEY,
-      expiresIn: '20m',
+      expiresIn: '2m',
     });
     const refresh_token = await this.jwtService.signAsync(payload, {
       secret: process.env.REFRESH_TOKEN_KEY,
@@ -68,7 +68,7 @@ export class AuthService {
 
       const access_token = await this.jwtService.signAsync(payload, {
         secret: process.env.ACCESS_TOKEN_KEY,
-        expiresIn: '20m',
+        expiresIn: '2m',
       });
       const refresh_token = await this.jwtService.signAsync(payload, {
         secret: process.env.REFRESH_TOKEN_KEY,
