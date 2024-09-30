@@ -122,11 +122,11 @@ export class TaskService {
     }
 
     if (searchTaskDto.order === 'priority') {
-      queryBuilder.orderBy('t.priority DESC');
+      queryBuilder.orderBy('t.priority', 'DESC');
     } else if (searchTaskDto.order === 'dueDate') {
-      queryBuilder.orderBy('t.due_date DESC');
+      queryBuilder.orderBy('t.due_date', 'DESC');
     } else {
-      queryBuilder.orderBy('t.id', 'DESC');
+      queryBuilder.orderBy('t.due_date', 'ASC');
     }
 
     const result = await queryBuilder.getMany();
