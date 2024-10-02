@@ -42,6 +42,9 @@ export class Task {
   })
   completed: boolean;
 
+  @Column({ nullable: true })
+  completed_date: Date;
+
   @Column({
     default: false,
   })

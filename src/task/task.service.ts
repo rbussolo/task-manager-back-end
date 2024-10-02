@@ -125,6 +125,8 @@ export class TaskService {
       queryBuilder.orderBy('t.priority', 'DESC');
     } else if (searchTaskDto.order === 'dueDate') {
       queryBuilder.orderBy('t.due_date', 'DESC');
+    } else if (searchTaskDto.completed) {
+      queryBuilder.orderBy('t.completed_date', 'DESC');
     } else {
       queryBuilder.orderBy('t.due_date', 'ASC');
     }
@@ -174,7 +176,12 @@ export class TaskService {
       throw new AppError('Registro não encontrado!', 404);
     }
 
-    task.completed = !task.completed;
+    if (task.completed) {
+      throw new AppError('Tarefa já foi concluída!');
+    }
+
+    task.completed = true;
+    task.completed_date = new Date();
 
     await repo.save(task);
 
