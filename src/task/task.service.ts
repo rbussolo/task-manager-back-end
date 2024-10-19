@@ -80,7 +80,7 @@ export class TaskService {
       .where('t.user_id = :user_id', { user_id: user.sub });
 
     if (searchTaskDto.title) {
-      queryBuilder.andWhere('t.title like :title', {
+      queryBuilder.andWhere('t.title ilike :title', {
         title: '%' + searchTaskDto.title + '%',
       });
     }
