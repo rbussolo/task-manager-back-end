@@ -14,6 +14,7 @@ import { UpdateGroupDto } from './dto/update-group.dto';
 import { User } from 'src/user/user.decorator';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { IUserPayload } from 'src/auth/auth.service';
+import { ChagePositionGroup } from './dto/change-position-group.dto';
 
 @Controller('/api/groups')
 export class GroupController {
@@ -38,13 +39,22 @@ export class GroupController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/:id')
+  @Patch('/update/:id')
   update(
     @Param('id') id: string,
     @Body() updateGroupDto: UpdateGroupDto,
     @User() user: IUserPayload,
   ) {
     return this.groupService.update(user, +id, updateGroupDto);
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('/position')
+  changePosition(
+    @Body() positionGroupDto: ChagePositionGroup,
+    @User() user: IUserPayload,
+  ) {
+    return this.groupService.changePosition(user, positionGroupDto);
   }
 
   @UseGuards(AuthGuard)

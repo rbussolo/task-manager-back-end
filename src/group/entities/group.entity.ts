@@ -25,6 +25,9 @@ export class Group {
   @Column()
   amount: number;
 
+  @Column({ default: 0 })
+  position: number;
+
   @Column({ nullable: true })
   color: string;
 

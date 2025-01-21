@@ -7,6 +7,7 @@ import { DataSource } from 'typeorm';
 import { IUserPayload } from 'src/auth/auth.service';
 import { Group } from './entities/group.entity';
 import { SuccessfullyDeleted } from 'src/success/SuccessfullyDeleted';
+import { ChagePositionGroup } from './dto/change-position-group.dto';
 
 @Injectable()
 export class GroupService {
@@ -25,11 +26,13 @@ export class GroupService {
 
     const repo = this.dataSource.getRepository(Group);
     const slug = this.generateSlugFromName(createGroupDto.name);
+    const amountOfGroup = await this.amount(user);
 
     const group = repo.create({
       ...createGroupDto,
       slug: slug,
       amount: 0,
+      position: amountOfGroup + 1,
       user_id: user.sub,
     });
 
@@ -41,13 +44,21 @@ export class GroupService {
   async findAll(user: IUserPayload) {
     const result = await this.dataSource
       .getRepository(Group)
-      .find({ where: { user_id: user.sub } });
+      .find({ where: { user_id: user.sub }, order: { position: 'ASC' } });
 
     if (!result) {
       throw new AppError('Registro não encontrado!', 404);
     }
 
     return result;
+  }
+
+  async amount(user: IUserPayload) {
+    const result = await this.dataSource
+      .getRepository(Group)
+      .count({ where: { user_id: user.sub } });
+
+    return result || 0;
   }
 
   async findOne(user: IUserPayload, id: number) {
@@ -80,6 +91,51 @@ export class GroupService {
     }
 
     return { ...group, ...updateGroupDto };
+  }
+
+  async changePosition(
+    user: IUserPayload,
+    positionGroupDto: ChagePositionGroup,
+  ) {
+    console.log(positionGroupDto);
+
+    const g1 = await this.findOne(user, positionGroupDto.g1Id);
+    const g2 = await this.findOne(user, positionGroupDto.g2Id);
+
+    if (g1 instanceof AppError) {
+      return g1;
+    }
+
+    if (g2 instanceof AppError) {
+      return g2;
+    }
+
+    if (
+      g1.position !== positionGroupDto.g2Position ||
+      g2.position !== positionGroupDto.g1Position
+    ) {
+      return new AppError('Nova posição inválida!');
+    }
+
+    const repo = this.dataSource.getRepository(Group);
+
+    const r1 = await repo.update(g1.id, {
+      position: positionGroupDto.g1Position,
+    });
+
+    if (!r1.affected) {
+      throw new AppError('Registro não encontrado!');
+    }
+
+    const r2 = await repo.update(g2.id, {
+      position: positionGroupDto.g2Position,
+    });
+
+    if (!r2.affected) {
+      throw new AppError('Registro não encontrado!');
+    }
+
+    return { success: true };
   }
 
   async remove(user: IUserPayload, id: number) {
