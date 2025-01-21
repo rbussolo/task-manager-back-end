@@ -56,7 +56,7 @@ export class Task {
   @Column({ nullable: true })
   group_id: number;
 
-  @ManyToOne(() => Group)
+  @ManyToOne(() => Group, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'group_id' })
   group: Group;
 
